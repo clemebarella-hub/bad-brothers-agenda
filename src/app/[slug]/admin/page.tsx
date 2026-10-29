@@ -27,8 +27,8 @@ export default async function AdminPage({
 
   if (!process.env.ADMIN_PIN || pin !== process.env.ADMIN_PIN) {
     return (
-      <main className="min-h-screen bg-neutral-950 text-neutral-100 flex items-center justify-center p-6">
-        <p className="text-neutral-400">Acceso no autorizado. Agrega ?pin=TU_PIN a la URL.</p>
+      <main className="min-h-screen bg-black text-neutral-100 flex items-center justify-center p-6">
+        <p className="text-neutral-500">Acceso no autorizado. Agrega ?pin=TU_PIN a la URL.</p>
       </main>
     );
   }
@@ -44,9 +44,18 @@ export default async function AdminPage({
   const rows = (appointments ?? []) as unknown as AppointmentRow[];
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-neutral-100 px-4 py-10">
+    <main className="min-h-screen bg-black text-neutral-100 px-4 py-10">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">{business.name} — Reservas</h1>
+        <div className="mb-8">
+          <div className="h-[3px] w-16 rounded-full bg-gradient-to-r from-red-600 via-amber-400 to-amber-600 mb-5" />
+          <p className="text-amber-500 text-xs font-semibold uppercase tracking-[0.25em] mb-1">
+            Panel
+          </p>
+          <h1 className="font-display text-3xl uppercase tracking-wide text-white">
+            {business.name}
+          </h1>
+          <p className="text-neutral-500 mt-1">Próximas reservas</p>
+        </div>
         <div className="space-y-3">
           {rows.map((a) => {
             const d = new Date(a.start_time);
@@ -60,12 +69,14 @@ export default async function AdminPage({
             return (
               <div
                 key={a.id}
-                className="rounded-lg border border-neutral-700 p-4 flex justify-between items-center gap-4"
+                className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-4 flex justify-between items-center gap-4"
               >
                 <div>
-                  <p className="font-medium">
+                  <p className="font-medium text-white">
                     {d.toLocaleDateString("es-CL", { weekday: "short", day: "numeric", month: "short" })} ·{" "}
-                    {d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" })}
+                    <span className="text-amber-400">
+                      {d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" })}
+                    </span>
                   </p>
                   <p className="text-sm text-neutral-400">
                     {a.customer_name} · {a.barbers?.name} · {a.services?.name}
@@ -75,14 +86,14 @@ export default async function AdminPage({
                   href={waLink(a.customer_phone, msg)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="shrink-0 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-3 py-2 text-sm font-semibold"
+                  className="shrink-0 rounded-lg bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 px-3 py-2 text-sm font-semibold text-black"
                 >
                   Confirmar WhatsApp
                 </a>
               </div>
             );
           })}
-          {rows.length === 0 && <p className="text-neutral-400">Sin reservas próximas.</p>}
+          {rows.length === 0 && <p className="text-neutral-500">Sin reservas próximas.</p>}
         </div>
       </div>
     </main>

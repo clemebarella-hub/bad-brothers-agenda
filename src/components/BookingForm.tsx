@@ -14,6 +14,15 @@ function toLocalDateStr(d: Date) {
   return `${y}-${m}-${day}`;
 }
 
+function initials(name: string) {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
 function nextAvailableDays(count: number, startTs: number) {
   const days: { value: string; label: string }[] = [];
   let cursor = new Date(startTs);
@@ -43,6 +52,19 @@ function buildDaySlots(dateStr: string) {
     slots.push(`${dateStr}T${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`);
   }
   return slots;
+}
+
+function StepLabel({ n, children }: { n: number; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 mb-3">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-500 text-black text-xs font-bold">
+        {n}
+      </span>
+      <span className="text-sm font-semibold uppercase tracking-wide text-neutral-300">
+        {children}
+      </span>
+    </div>
+  );
 }
 
 export default function BookingForm({
@@ -151,66 +173,89 @@ export default function BookingForm({
     const [h, m] = confirmed.split("T")[1].split(":").map(Number);
     const d = new Date(y, mo - 1, da, h, m);
     return (
-      <div className="rounded-xl bg-emerald-900/30 border border-emerald-700 p-6 text-center">
-        <p className="text-lg font-semibold mb-2">¡Listo, {name}!</p>
-        <p className="text-neutral-200">
-          Tu hora quedó reservada para el{" "}
-          {d.toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" })} a
-          las {d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" })}.
+      <div className="relative overflow-hidden rounded-2xl border border-amber-500/40 bg-gradient-to-b from-amber-500/10 to-transparent p-8 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-500 text-black text-2xl font-bold">
+          ✓
+        </div>
+        <p className="font-display text-2xl uppercase tracking-wide text-white mb-2">
+          ¡Listo, {name}!
         </p>
-        <p className="text-neutral-400 text-sm mt-3">El barbero te confirmará por WhatsApp.</p>
+        <p className="text-neutral-300">
+          Tu hora quedó reservada para el{" "}
+          <span className="text-amber-400 font-medium">
+            {d.toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" })}
+          </span>{" "}
+          a las{" "}
+          <span className="text-amber-400 font-medium">
+            {d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+          .
+        </p>
+        <p className="text-neutral-500 text-sm mt-4">El barbero te confirmará por WhatsApp.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <section>
-        <label className="block text-sm font-medium mb-2">Servicio</label>
+        <StepLabel n={1}>Servicio</StepLabel>
         <div className="grid grid-cols-1 gap-2">
           {services.map((s) => (
             <button
               key={s.id}
               onClick={() => setServiceId(s.id)}
-              className={`text-left rounded-lg border px-4 py-3 ${
-                serviceId === s.id ? "border-emerald-500 bg-emerald-950/40" : "border-neutral-700"
+              className={`flex items-center justify-between rounded-xl border px-4 py-3 transition-colors ${
+                serviceId === s.id
+                  ? "border-amber-500 bg-amber-500/10"
+                  : "border-neutral-800 bg-neutral-900/60 hover:border-neutral-700"
               }`}
             >
-              <div className="flex justify-between">
-                <span>{s.name}</span>
-                <span className="text-neutral-400">${s.price_clp.toLocaleString("es-CL")}</span>
-              </div>
+              <span className="flex items-center gap-2">
+                <span aria-hidden>✂️</span>
+                <span className="font-medium">{s.name}</span>
+              </span>
+              <span className="text-amber-400 font-semibold">
+                ${s.price_clp.toLocaleString("es-CL")}
+              </span>
             </button>
           ))}
         </div>
       </section>
 
       <section>
-        <label className="block text-sm font-medium mb-2">Barbero</label>
-        <div className="flex gap-2 flex-wrap">
+        <StepLabel n={2}>Barbero</StepLabel>
+        <div className="flex gap-3 flex-wrap">
           {barbers.map((b) => (
             <button
               key={b.id}
               onClick={() => setBarberId(b.id)}
-              className={`rounded-full border px-4 py-2 text-sm ${
-                barberId === b.id ? "border-emerald-500 bg-emerald-950/40" : "border-neutral-700"
+              className={`flex items-center gap-2 rounded-full border pr-4 pl-1.5 py-1.5 transition-colors ${
+                barberId === b.id
+                  ? "border-amber-500 bg-amber-500/10"
+                  : "border-neutral-800 bg-neutral-900/60 hover:border-neutral-700"
               }`}
             >
-              {b.name}
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-amber-700 text-black text-xs font-bold">
+                {initials(b.name)}
+              </span>
+              <span className="text-sm font-medium">{b.name}</span>
             </button>
           ))}
         </div>
       </section>
 
       <section>
-        <label className="block text-sm font-medium mb-2">Día</label>
+        <StepLabel n={3}>Día</StepLabel>
         <div className="flex gap-2 overflow-x-auto pb-1">
           {days.map((d) => (
             <button
               key={d.value}
               onClick={() => setDate(d.value)}
-              className={`shrink-0 rounded-lg border px-3 py-2 text-sm capitalize ${
-                date === d.value ? "border-emerald-500 bg-emerald-950/40" : "border-neutral-700"
+              className={`shrink-0 rounded-xl border px-3 py-2 text-sm capitalize transition-colors ${
+                date === d.value
+                  ? "border-amber-500 bg-amber-500/10 text-amber-300"
+                  : "border-neutral-800 bg-neutral-900/60 hover:border-neutral-700"
               }`}
             >
               {d.label}
@@ -220,11 +265,11 @@ export default function BookingForm({
       </section>
 
       <section>
-        <label className="block text-sm font-medium mb-2">Horario</label>
+        <StepLabel n={4}>Horario</StepLabel>
         {loadingSlots ? (
-          <p className="text-neutral-400 text-sm">Cargando horarios...</p>
+          <p className="text-neutral-500 text-sm">Cargando horarios...</p>
         ) : availableSlots.length === 0 ? (
-          <p className="text-neutral-400 text-sm">No hay horarios disponibles ese día.</p>
+          <p className="text-neutral-500 text-sm">No hay horarios disponibles ese día.</p>
         ) : (
           <div className="grid grid-cols-4 gap-2">
             {availableSlots.map((s) => {
@@ -233,8 +278,10 @@ export default function BookingForm({
                 <button
                   key={s}
                   onClick={() => setChosenTime(s)}
-                  className={`rounded-lg border py-2 text-sm ${
-                    slot === s ? "border-emerald-500 bg-emerald-950/40" : "border-neutral-700"
+                  className={`rounded-xl border py-2 text-sm font-medium transition-colors ${
+                    slot === s
+                      ? "border-amber-500 bg-amber-500 text-black"
+                      : "border-neutral-800 bg-neutral-900/60 hover:border-neutral-700"
                   }`}
                 >
                   {t}
@@ -246,14 +293,15 @@ export default function BookingForm({
       </section>
 
       <section className="space-y-3">
+        <StepLabel n={5}>Tus datos</StepLabel>
         <input
-          className="w-full rounded-lg bg-neutral-900 border border-neutral-700 px-4 py-3"
+          className="w-full rounded-xl bg-neutral-900/60 border border-neutral-800 px-4 py-3 placeholder:text-neutral-500 focus:border-amber-500 focus:outline-none"
           placeholder="Tu nombre"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <input
-          className="w-full rounded-lg bg-neutral-900 border border-neutral-700 px-4 py-3"
+          className="w-full rounded-xl bg-neutral-900/60 border border-neutral-800 px-4 py-3 placeholder:text-neutral-500 focus:border-amber-500 focus:outline-none"
           placeholder="Tu WhatsApp (+56 9 ...)"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
@@ -262,7 +310,7 @@ export default function BookingForm({
         <button
           onClick={submit}
           disabled={submitting}
-          className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 py-3 font-semibold"
+          className="w-full rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 disabled:opacity-50 py-3.5 font-display uppercase tracking-wide text-black text-lg"
         >
           {submitting ? "Reservando..." : "Confirmar hora"}
         </button>

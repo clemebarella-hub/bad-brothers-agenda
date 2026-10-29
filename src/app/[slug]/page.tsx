@@ -33,10 +33,18 @@ export default async function BookingPage({
     .order("price_clp");
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-neutral-100 px-4 py-10">
+    <main className="min-h-screen bg-black text-neutral-100 px-4 py-10">
       <div className="max-w-md mx-auto">
-        <h1 className="text-2xl font-bold mb-1">{business.name}</h1>
-        <p className="text-neutral-400 mb-8">Reserva tu hora online</p>
+        <div className="mb-8">
+          <div className="h-[3px] w-16 rounded-full bg-gradient-to-r from-red-600 via-amber-400 to-amber-600 mb-5" />
+          <p className="text-amber-500 text-xs font-semibold uppercase tracking-[0.25em] mb-1">
+            Barbería
+          </p>
+          <h1 className="font-display text-4xl uppercase tracking-wide leading-none text-white">
+            {business.name}
+          </h1>
+          <p className="text-neutral-500 mt-2">Reserva tu hora online en 1 minuto</p>
+        </div>
         <BookingForm
           businessId={business.id}
           barbers={(barbers ?? []) as Barber[]}
