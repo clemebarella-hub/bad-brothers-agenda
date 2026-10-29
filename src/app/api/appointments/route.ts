@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { sendNewAppointmentEmail } from "@/lib/notify";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -38,6 +39,24 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  const [{ data: business }, { data: barber }, { data: service }] = await Promise.all([
+    supabaseAdmin.from("businesses").select("name, slug").eq("id", businessId).single(),
+    supabaseAdmin.from("barbers").select("name").eq("id", barberId).single(),
+    supabaseAdmin.from("services").select("name").eq("id", serviceId).single(),
+  ]);
+
+  if (business && barber && service) {
+    await sendNewAppointmentEmail({
+      businessName: business.name,
+      barberName: barber.name,
+      serviceName: service.name,
+      customerName,
+      customerPhone,
+      startTime,
+      adminUrl: `${req.nextUrl.origin}/${business.slug}/admin?pin=${process.env.ADMIN_PIN}`,
+    });
   }
 
   return NextResponse.json({ appointment: data });
